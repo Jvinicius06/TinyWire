@@ -423,7 +423,7 @@ void Twi_attachSlaveRxEvent(void (*function)(uint8_t, int)) {
  * Input    function: callback function to use
  * Output   none
  */
-void Twi_attachSlaveTxEvent(void (*function)(void)) {
+void Twi_attachSlaveTxEvent(void (*function)(uint8_t)) {
     twi_onSlaveTransmit = function;
 }
 

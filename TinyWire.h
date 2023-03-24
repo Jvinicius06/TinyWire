@@ -54,12 +54,11 @@
 #define NUMBEROFSLAVE 1
 #endif
 
-template <int NSLaves>
 class TinyTwi {
    private:
     bool master_mode = false;
     bool temp_master_mode = false;
-    static uint8_t slave_addr[NSLaves];
+    static uint8_t slave_addr[NUMBEROFSLAVE];
     static void (*user_onRequest)(uint8_t);
     static void (*user_onReceive)(uint8_t, int);
     static void onRequestService(uint8_t);
@@ -87,7 +86,7 @@ class TinyTwi {
     void onRequest(void (*)(void));
 };
 
-extern TinyTwi<NUMBEROFSLAVE> TinyWire;
+extern TinyTwi TinyWire;
 
 #include "TinyWire.cpp"
 

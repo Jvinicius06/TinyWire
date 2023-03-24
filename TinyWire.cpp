@@ -27,28 +27,24 @@
 
 #include "twi.h"
 
-template <int N>
-void (*TinyTwi<N>::user_onRequest)(uint8_t);
-template <int N>
-void (*TinyTwi<N>::user_onReceive)(uint8_t, int);
+void (*TinyTwi::user_onRequest)(uint8_t);
 
-template <int N>
-uint8_t TinyTwi<N>::slave_addr[N];
+void (*TinyTwi::user_onReceive)(uint8_t, int);
 
-template <int N>
-TinyTwi<N>::TinyTwi() {
+uint8_t TinyTwi::slave_addr[NUMBEROFSLAVE];
+
+TinyTwi::TinyTwi() {
 }
 
 /*---------------------------------------------------
  Initialize USI and library for master function
 -----------------------------------------------------*/
-template <int N>
-void TinyTwi<N>::end() {
+
+void TinyTwi::end() {
     Twi_end();
 }
 
-template <int N>
-void TinyTwi<N>::begin() {
+void TinyTwi::begin() {
     master_mode = true;
     Twi_attachSlaveTxEvent(onRequestService);
     Twi_attachSlaveRxEvent(onReceiveService);
@@ -59,8 +55,8 @@ void TinyTwi<N>::begin() {
  Initialize USI and library for slave function
  Parameter: uint8_t slave address
 -----------------------------------------------------*/
-template <int N>
-void TinyTwi<N>::begin(uint8_t id, uint8_t I2C_SLAVE_ADDR) {
+
+void TinyTwi::begin(uint8_t id, uint8_t I2C_SLAVE_ADDR) {
     master_mode = false;
     slave_addr[id] = I2C_SLAVE_ADDR;
     Twi_attachSlaveTxEvent(onRequestService);
@@ -69,8 +65,7 @@ void TinyTwi<N>::begin(uint8_t id, uint8_t I2C_SLAVE_ADDR) {
     Twi_slave_init();
 }
 
-template <int N>
-uint8_t TinyTwi<N>::send(uint8_t data) {
+uint8_t TinyTwi::send(uint8_t data) {
     if (master_mode || temp_master_mode) {
         return Twi_master_send(data);
     } else {
@@ -78,8 +73,7 @@ uint8_t TinyTwi<N>::send(uint8_t data) {
     }
 }
 
-template <int N>
-uint8_t TinyTwi<N>::send(uint8_t *data, uint8_t length) {
+uint8_t TinyTwi::send(uint8_t *data, uint8_t length) {
     if (master_mode || temp_master_mode) {
         // TODO
         // return Twi_master_send(data,length);
@@ -89,33 +83,27 @@ uint8_t TinyTwi<N>::send(uint8_t *data, uint8_t length) {
     }
 }
 
-template <int N>
-uint8_t TinyTwi<N>::write(uint8_t data) {
+uint8_t TinyTwi::write(uint8_t data) {
     return send(data);
 }
 
-template <int N>
-uint8_t TinyTwi<N>::read() {
+uint8_t TinyTwi::read() {
     return Twi_receive();
 }
 
-template <int N>
-uint8_t TinyTwi<N>::receive() {
+uint8_t TinyTwi::receive() {
     return read();
 }
 
-template <int N>
-uint8_t TinyTwi<N>::available() {
+uint8_t TinyTwi::available() {
     return Twi_available();
 }
 
-template <int N>
-void TinyTwi<N>::beginTransmission(uint8_t slaveAddr) {
+void TinyTwi::beginTransmission(uint8_t slaveAddr) {
     Twi_master_beginTransmission(slaveAddr);
 }
 
-template <int N>
-uint8_t TinyTwi<N>::endTransmission() {
+uint8_t TinyTwi::endTransmission() {
     uint8_t temp;
 
     if (!master_mode) {
@@ -131,8 +119,7 @@ uint8_t TinyTwi<N>::endTransmission() {
     return temp;
 }
 
-template <int N>
-uint8_t TinyTwi<N>::requestFrom(uint8_t slaveAddr, uint8_t numBytes) {
+uint8_t TinyTwi::requestFrom(uint8_t slaveAddr, uint8_t numBytes) {
     uint8_t temp;
     if (!master_mode) {
         temp_master_mode = true;
@@ -147,8 +134,8 @@ uint8_t TinyTwi<N>::requestFrom(uint8_t slaveAddr, uint8_t numBytes) {
 }
 
 // behind the scenes function that is called when data is received
-template <int N>
-void TinyTwi<N>::onReceiveService(uint8_t address, int numBytes) {
+
+void TinyTwi::onReceiveService(uint8_t address, int numBytes) {
     // don't bother if user hasn't registered a callback
     if (!user_onReceive) {
         return;
@@ -158,8 +145,8 @@ void TinyTwi<N>::onReceiveService(uint8_t address, int numBytes) {
 }
 
 // behind the scenes function that is called when data is requested
-template <int N>
-void TinyTwi<N>::onRequestService(uint8_t address) {
+
+void TinyTwi::onRequestService(uint8_t address) {
     // don't bother if user hasn't registered a callback
     if (!user_onRequest) {
         return;
@@ -168,9 +155,8 @@ void TinyTwi<N>::onRequestService(uint8_t address) {
     user_onRequest(address);
 }
 
-template <int N>
-bool TinyTwi<N>::onCheckAddressService(int address) {
-    for (int i = 0; i < N; i++) {
+bool TinyTwi::onCheckAddressService(int address) {
+    for (int i = 0; i < NUMBEROFSLAVE; i++) {
         if (slave_addr[i] == address) {
             return true;
         }
@@ -178,19 +164,17 @@ bool TinyTwi<N>::onCheckAddressService(int address) {
     return false;
 }
 
-template <int N>
-void TinyTwi<N>::onReceive(void (*function)(uint8_t, int)) {
+void TinyTwi::onReceive(void (*function)(uint8_t, int)) {
     user_onReceive = function;
 }
 
-template <int N>
-void TinyTwi<N>::onRequest(void (*function)(void)) {
+void TinyTwi::onRequest(void (*function)(void)) {
     user_onRequest = function;
 }
 
 /*-----------------------------------------------------
  Preinstantiate TinyWire Object
 -------------------------------------------------------*/
-TinyTwi<NUMBEROFSLAVE> TinyWire = TinyTwi<NUMBEROFSLAVE>();
+TinyTwi TinyWire = TinyTwi();
 
 #endif
